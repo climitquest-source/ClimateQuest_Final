@@ -173,6 +173,7 @@ const TEAMS = [
 // State variables
 let currentQuestion = null;
 let selectedTeamIdx = null;
+let answerVisible = false;
 
 // Initialize the game once DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
@@ -189,8 +190,10 @@ function buildScoreboard() {
     const card = document.createElement('div');
     card.className = 'team-card';
     card.dataset.teamIndex = index;
+    // Apply team colour to the whole card so the border-left uses it via currentColor
+    card.style.color = team.color;
     card.innerHTML = `
-      <div class="team-name" style="color:${team.color}">${team.name}</div>
+      <div class="team-name">${team.name}</div>
       <div class="team-score" id="team-score-${index}">${team.score}</div>
     `;
     scoreboard.appendChild(card);
@@ -229,11 +232,14 @@ function buildBoard() {
 function openQuestion(category, questionObj, cellEl) {
   currentQuestion = { category, questionObj, cellEl };
   selectedTeamIdx = null;
+  answerVisible = false;
   // Populate modal
   document.getElementById('modal-category').textContent = `${category.name} – ${questionObj.value} points`;
   document.getElementById('modal-question').textContent = questionObj.question;
   document.getElementById('modal-answer').textContent = questionObj.answer;
-  document.getElementById('answer-block').classList.add('hidden');
+  // Hide the answer block explicitly
+  const answerBlock = document.getElementById('answer-block');
+  answerBlock.style.display = 'none';
   // Setup team select buttons
   const teamSelect = document.getElementById('team-select');
   teamSelect.innerHTML = '';
@@ -252,6 +258,10 @@ function openQuestion(category, questionObj, cellEl) {
   });
   // Show modal
   document.getElementById('modal').classList.remove('hidden');
+  // Reset show/hide answer button
+  const showAnsBtn = document.getElementById('show-answer');
+  showAnsBtn.textContent = 'Show Answer';
+  showAnsBtn.disabled = false;
 }
 
 // Modal button handlers
@@ -261,8 +271,16 @@ function setupModalHandlers() {
   const wrongBtn = document.getElementById('wrong-btn');
   const closeBtn = document.getElementById('close-btn');
   showAnsBtn.addEventListener('click', () => {
-    document.getElementById('answer-block').classList.remove('hidden');
-    showAnsBtn.disabled = true;
+    // Toggle answer visibility and button label
+    answerVisible = !answerVisible;
+    const answerBlock = document.getElementById('answer-block');
+    if (answerVisible) {
+      answerBlock.style.display = 'block';
+      showAnsBtn.textContent = 'Hide Answer';
+    } else {
+      answerBlock.style.display = 'none';
+      showAnsBtn.textContent = 'Show Answer';
+    }
   });
   correctBtn.addEventListener('click', () => {
     if (currentQuestion && selectedTeamIdx !== null) {
