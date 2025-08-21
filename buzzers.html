@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Colour Buzzer Cards</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 1rem;
+      background: #f5f5f5;
+      color: #214f3d;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    p {
+      max-width: 700px;
+      margin: 0 auto 1rem auto;
+      font-size: 0.95rem;
+    }
+    .card-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+    }
+    .buzzer-card {
+      flex: 0 1 200px;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 1.5rem;
+      font-weight: bold;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    /* Specific colours for each team */
+    .green { background: #2d6a4f; }
+    .blue  { background: #386fa4; }
+    .yellow{ background: #e9c46a; color: #214f3d; }
+    .red   { background: #e76f51; }
+  </style>
+</head>
+<body>
+  <h1>Colour Buzzer Cards</h1>
+  <p>
+    Print these cards on paper or cardstock and cut them out. Each team holds up
+    their colour card when they want to buzz in. The host watches for the
+    first card raised and clicks the corresponding colour in the game.
+  </p>
+  <div class="card-container">
+    <div class="buzzer-card green">Green Team</div>
+    <div class="buzzer-card blue">Blue Team</div>
+    <div class="buzzer-card yellow">Yellow Team</div>
+    <div class="buzzer-card red">Red Team</div>
+  </div>
+</body>
+</html>

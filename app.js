@@ -1,8 +1,13 @@
 // Game logic for Cli‑Mit Quest host screen.
-// This script defines the questions pack, sets up the scoreboard and board,
-// and handles user interactions for displaying questions and scoring teams.
+// This script defines the question pack, team setup, and board logic for
+// the offline host experience. It supports choosing between two and four
+// teams and naming them, toggling answer visibility, and only marking a
+// clue as used when a correct answer is awarded.
 
-// Data: Categories, questions, answers and values.
+// ===================== Data definitions =====================
+// A single pack containing five categories with five questions each.
+// Each question has a value, prompt and answer. All values are doubles
+// (200–1000) as requested.
 const PACK = {
   categories: [
     {
@@ -156,13 +161,16 @@ const PACK = {
       ]
     }
   ],
+  // Final question used if you wish to add a final round. Not used in current UI.
   final_question: {
     question: "This Canadian program, started in 2019, aims to reduce household food insecurity by improving access to healthy food for school‑aged children.",
     answer: "What is the Canada Food Policy / School Food Program?"
   }
 };
 
-// Colour options and default names for teams.
+// Default colours for up to four teams. Teams are created dynamically using these
+// values when the host picks the number of teams. If more than four teams are
+// desired in the future, extend this array accordingly.
 const COLOUR_OPTIONS = [
   { defaultName: 'Green', color: '#2d6a4f' },
   { defaultName: 'Blue', color: '#386fa4' },
@@ -170,26 +178,35 @@ const COLOUR_OPTIONS = [
   { defaultName: 'Red', color: '#e76f51' }
 ];
 
-// Dynamic teams array (populated during setup)
+// Teams array (populated during game setup). Each team has a name, colour
+// and score. It is empty until the host chooses the number of teams.
 let teams = [];
 
-// State variables
+// Current state while a question is open. We track the category/question
+// object, the cell element being asked, which team (if any) is selected
+// and whether the answer is visible.
 let currentQuestion = null;
 let selectedTeamIdx = null;
 let answerVisible = false;
 
-// Initialize the game once DOM is ready
+// Entry point: once the DOM is ready, prepare the team setup form and
+// modal handlers.
 document.addEventListener('DOMContentLoaded', () => {
   setupTeamForm();
   setupModalHandlers();
 });
 
-// Setup the team selection form
+// ===================== Setup: Team selection =====================
+// Build the team selection interface. The host selects the number of
+// participating teams (2–4) and optionally renames them. When Start Game
+// is clicked, the scoreboard and game board are built and the overlay is
+// hidden.
 function setupTeamForm() {
   const teamCountSelect = document.getElementById('team-count');
   const teamNamesContainer = document.getElementById('team-names');
   const startGameBtn = document.getElementById('start-game-btn');
-  // Build initial name inputs
+
+  // Helper to build input boxes according to the selected team count
   function buildNameInputs(count) {
     teamNamesContainer.innerHTML = '';
     for (let i = 0; i < count; i++) {
@@ -203,14 +220,17 @@ function setupTeamForm() {
       teamNamesContainer.appendChild(label);
     }
   }
-  // Initialize with default 2 teams
+
+  // Initialise with the default selected value (initially 2)
   buildNameInputs(parseInt(teamCountSelect.value));
-  // Update inputs when selection changes
+
+  // When the number of teams changes, rebuild the name inputs
   teamCountSelect.addEventListener('change', () => {
     const count = parseInt(teamCountSelect.value);
     buildNameInputs(count);
   });
-  // Start game handler
+
+  // Start the game: gather names/colours and construct the UI
   startGameBtn.addEventListener('click', () => {
     const count = parseInt(teamCountSelect.value);
     teams = [];
@@ -220,15 +240,22 @@ function setupTeamForm() {
       const { color } = COLOUR_OPTIONS[i];
       teams.push({ name, color, score: 0 });
     }
-    // Build UI
+    // Build the scoreboard and board
     buildScoreboard();
     buildBoard();
-    // Hide setup overlay
-    document.getElementById('setup-modal').style.display = 'none';
+    // Hide the setup overlay
+    const overlay = document.getElementById('setup-modal');
+    if (overlay) overlay.style.display = 'none';
+    // Show the instructions section if present
+    const instructions = document.getElementById('instructions');
+    if (instructions) instructions.style.display = 'block';
   });
 }
 
-// Build the scoreboard
+// ===================== Scoreboard =====================
+// Create the scoreboard based on the currently selected teams. Each team gets
+// a card with its colour down the left edge and its current score. Colour is
+// applied to the entire card via currentColor so border-left picks it up.
 function buildScoreboard() {
   const scoreboard = document.getElementById('scoreboard');
   scoreboard.innerHTML = '';
@@ -236,7 +263,6 @@ function buildScoreboard() {
     const card = document.createElement('div');
     card.className = 'team-card';
     card.dataset.teamIndex = index;
-    // Apply team colour to the whole card so the border-left uses it via currentColor
     card.style.color = team.color;
     card.innerHTML = `
       <div class="team-name">${team.name}</div>
@@ -246,19 +272,20 @@ function buildScoreboard() {
   });
 }
 
-// Build the board with categories and values
+// ===================== Board =====================
+// Create the clue board: first row shows category names; subsequent rows
+// contain the point values. Each cell stores its category/row in data-*.
 function buildBoard() {
   const board = document.getElementById('board');
-  // Clear board
   board.innerHTML = '';
-  // Create category headers
+  // Create category header cells
   PACK.categories.forEach((cat) => {
     const cell = document.createElement('div');
     cell.className = 'cell category';
     cell.textContent = cat.name;
     board.appendChild(cell);
   });
-  // For each row of values (assuming all categories have the same number of questions)
+  // For each question index (row), add cells for each category
   const numRows = PACK.categories[0].questions.length;
   for (let row = 0; row < numRows; row++) {
     PACK.categories.forEach((cat, col) => {
@@ -274,19 +301,22 @@ function buildBoard() {
   }
 }
 
-// Open a question in the modal
+// ===================== Question Modal =====================
+// Open a question. Populate the modal with details, create the team
+// selection buttons and reset answer visibility. This does not mark the
+// cell as used; that happens when a correct answer is awarded.
 function openQuestion(category, questionObj, cellEl) {
   currentQuestion = { category, questionObj, cellEl };
   selectedTeamIdx = null;
   answerVisible = false;
-  // Populate modal
+  // Populate modal content
   document.getElementById('modal-category').textContent = `${category.name} – ${questionObj.value} points`;
   document.getElementById('modal-question').textContent = questionObj.question;
   document.getElementById('modal-answer').textContent = questionObj.answer;
-  // Hide the answer block explicitly
+  // Hide answer block initially
   const answerBlock = document.getElementById('answer-block');
   answerBlock.style.display = 'none';
-  // Setup team select buttons
+  // Build team selection buttons
   const teamSelect = document.getElementById('team-select');
   teamSelect.innerHTML = '';
   teams.forEach((team, idx) => {
@@ -296,7 +326,6 @@ function openQuestion(category, questionObj, cellEl) {
     btn.textContent = team.name;
     btn.addEventListener('click', () => {
       selectedTeamIdx = idx;
-      // mark selected
       document.querySelectorAll('.team-button').forEach(el => el.classList.remove('selected'));
       btn.classList.add('selected');
     });
@@ -304,20 +333,21 @@ function openQuestion(category, questionObj, cellEl) {
   });
   // Show modal
   document.getElementById('modal').classList.remove('hidden');
-  // Reset show/hide answer button
+  // Reset show/hide button text and enabled state
   const showAnsBtn = document.getElementById('show-answer');
   showAnsBtn.textContent = 'Show Answer';
   showAnsBtn.disabled = false;
 }
 
-// Modal button handlers
+// ===================== Modal handlers =====================
+// Attach handlers to the show/hide answer, correct, wrong and close buttons.
 function setupModalHandlers() {
   const showAnsBtn = document.getElementById('show-answer');
   const correctBtn = document.getElementById('correct-btn');
   const wrongBtn = document.getElementById('wrong-btn');
   const closeBtn = document.getElementById('close-btn');
   showAnsBtn.addEventListener('click', () => {
-    // Toggle answer visibility and button label
+    // Toggle answer visibility
     answerVisible = !answerVisible;
     const answerBlock = document.getElementById('answer-block');
     if (answerVisible) {
@@ -329,33 +359,33 @@ function setupModalHandlers() {
     }
   });
   correctBtn.addEventListener('click', () => {
+    // Only award points and mark the question used if a team is selected
     if (currentQuestion && selectedTeamIdx !== null) {
       teams[selectedTeamIdx].score += currentQuestion.questionObj.value;
       updateScores();
       finishQuestion(true);
     }
-    // If no team selected, don't close or mark used
   });
   wrongBtn.addEventListener('click', () => {
-    // Do not mark used when wrong, just close the modal
+    // On wrong answer, just close the modal without marking the cell used
     finishQuestion(false);
   });
   closeBtn.addEventListener('click', () => {
+    // Closing behaves like wrong (no change to board)
     finishQuestion(false);
   });
 }
 
-// Update the scoreboard UI
+// Update the scoreboard numbers
 function updateScores() {
   teams.forEach((team, idx) => {
     const el = document.getElementById(`team-score-${idx}`);
-    if (el) {
-      el.textContent = team.score;
-    }
+    if (el) el.textContent = team.score;
   });
 }
 
-// Finish a question: mark cell used and hide modal
+// Finish the question: optionally mark the cell used (only when correct)
+// then hide the modal and reset state variables.
 function finishQuestion(markUsed = true) {
   if (currentQuestion) {
     if (markUsed && currentQuestion.cellEl) {
@@ -363,10 +393,10 @@ function finishQuestion(markUsed = true) {
       currentQuestion.cellEl.textContent = '';
     }
   }
-  // Reset state
   currentQuestion = null;
   selectedTeamIdx = null;
-  // Hide modal and reset answer button
+  answerVisible = false;
   document.getElementById('modal').classList.add('hidden');
+  // Always re-enable show answer button for next question
   document.getElementById('show-answer').disabled = false;
 }

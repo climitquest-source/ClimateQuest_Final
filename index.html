@@ -16,6 +16,23 @@
     <section id="scoreboard"></section>
     <!-- Game Board -->
     <section id="board"></section>
+
+    <!-- Instructions shown after game starts -->
+    <section id="instructions" style="display:none; max-width: 900px; margin-top:1rem;" aria-live="polite">
+      <h2>How to Play with Colour Buzzers</h2>
+      <p>
+        Each team has a colour. When a question is asked, the first team to hold
+        up their coloured card or flag gets to answer. The host clicks the
+        corresponding colour button in the modal to register which team buzzed
+        in. Only when the answer is judged correct will the question tile
+        disappear and points be awarded.
+      </p>
+      <p>
+        Need cards? Print the <a href="buzzers.html" target="_blank">colour buzzer cards</a>
+        (one per team) before hosting. They include a large coloured bar with
+        the team name for easy visibility.
+      </p>
+    </section>
   </main>
 
   <!-- Setup Modal: choose number of teams and names -->
@@ -39,7 +56,10 @@
     <div class="modal-content">
       <h2 id="modal-category"></h2>
       <p id="modal-question"></p>
-      <div id="answer-block" class="hidden">
+      <!-- Answer block: initially hidden via inline style. We do not assign the
+           'hidden' class here so that JavaScript can toggle its display
+           without !important overriding it. -->
+      <div id="answer-block" style="display:none;">
         <p id="modal-answer"></p>
       </div>
       <div class="modal-actions">
