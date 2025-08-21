@@ -162,13 +162,16 @@ const PACK = {
   }
 };
 
-// Team definitions: names and colours.
-const TEAMS = [
-  { name: "Green", color: "#2d6a4f", score: 0 },
-  { name: "Blue", color: "#386fa4", score: 0 },
-  { name: "Yellow", color: "#e9c46a", score: 0 },
-  { name: "Red", color: "#e76f51", score: 0 }
+// Colour options and default names for teams.
+const COLOUR_OPTIONS = [
+  { defaultName: 'Green', color: '#2d6a4f' },
+  { defaultName: 'Blue', color: '#386fa4' },
+  { defaultName: 'Yellow', color: '#e9c46a' },
+  { defaultName: 'Red', color: '#e76f51' }
 ];
+
+// Dynamic teams array (populated during setup)
+let teams = [];
 
 // State variables
 let currentQuestion = null;
@@ -177,16 +180,59 @@ let answerVisible = false;
 
 // Initialize the game once DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-  buildScoreboard();
-  buildBoard();
+  setupTeamForm();
   setupModalHandlers();
 });
+
+// Setup the team selection form
+function setupTeamForm() {
+  const teamCountSelect = document.getElementById('team-count');
+  const teamNamesContainer = document.getElementById('team-names');
+  const startGameBtn = document.getElementById('start-game-btn');
+  // Build initial name inputs
+  function buildNameInputs(count) {
+    teamNamesContainer.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+      const label = document.createElement('label');
+      label.textContent = `Team ${i + 1} name:`;
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = COLOUR_OPTIONS[i].defaultName;
+      input.id = `team-name-${i}`;
+      label.appendChild(input);
+      teamNamesContainer.appendChild(label);
+    }
+  }
+  // Initialize with default 2 teams
+  buildNameInputs(parseInt(teamCountSelect.value));
+  // Update inputs when selection changes
+  teamCountSelect.addEventListener('change', () => {
+    const count = parseInt(teamCountSelect.value);
+    buildNameInputs(count);
+  });
+  // Start game handler
+  startGameBtn.addEventListener('click', () => {
+    const count = parseInt(teamCountSelect.value);
+    teams = [];
+    for (let i = 0; i < count; i++) {
+      const input = document.getElementById(`team-name-${i}`);
+      const name = input && input.value ? input.value.trim() : COLOUR_OPTIONS[i].defaultName;
+      const { color } = COLOUR_OPTIONS[i];
+      teams.push({ name, color, score: 0 });
+    }
+    // Build UI
+    buildScoreboard();
+    buildBoard();
+    // Hide setup overlay
+    document.getElementById('setup-modal').style.display = 'none';
+  });
+}
 
 // Build the scoreboard
 function buildScoreboard() {
   const scoreboard = document.getElementById('scoreboard');
   scoreboard.innerHTML = '';
-  TEAMS.forEach((team, index) => {
+  teams.forEach((team, index) => {
     const card = document.createElement('div');
     card.className = 'team-card';
     card.dataset.teamIndex = index;
@@ -243,7 +289,7 @@ function openQuestion(category, questionObj, cellEl) {
   // Setup team select buttons
   const teamSelect = document.getElementById('team-select');
   teamSelect.innerHTML = '';
-  TEAMS.forEach((team, idx) => {
+  teams.forEach((team, idx) => {
     const btn = document.createElement('button');
     btn.className = 'team-button';
     btn.style.backgroundColor = team.color;
@@ -284,13 +330,15 @@ function setupModalHandlers() {
   });
   correctBtn.addEventListener('click', () => {
     if (currentQuestion && selectedTeamIdx !== null) {
-      TEAMS[selectedTeamIdx].score += currentQuestion.questionObj.value;
+      teams[selectedTeamIdx].score += currentQuestion.questionObj.value;
       updateScores();
+      finishQuestion(true);
     }
-    finishQuestion();
+    // If no team selected, don't close or mark used
   });
   wrongBtn.addEventListener('click', () => {
-    finishQuestion();
+    // Do not mark used when wrong, just close the modal
+    finishQuestion(false);
   });
   closeBtn.addEventListener('click', () => {
     finishQuestion(false);
@@ -299,7 +347,7 @@ function setupModalHandlers() {
 
 // Update the scoreboard UI
 function updateScores() {
-  TEAMS.forEach((team, idx) => {
+  teams.forEach((team, idx) => {
     const el = document.getElementById(`team-score-${idx}`);
     if (el) {
       el.textContent = team.score;

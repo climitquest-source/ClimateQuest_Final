@@ -15,6 +15,22 @@
     <section id="scoreboard"></section>
     <section id="board"></section>
   </main>
+
+  <!-- Setup Modal: choose number of teams and names -->
+  <div id="setup-modal" class="setup-overlay">
+    <div class="setup-content">
+      <h2>Game Setup</h2>
+      <p>Select the number of teams and enter their names.</p>
+      <label for="team-count">Number of teams:</label>
+      <select id="team-count">
+        <option value="2">2 Teams</option>
+        <option value="3">3 Teams</option>
+        <option value="4">4 Teams</option>
+      </select>
+      <div id="team-names"></div>
+      <button id="start-game-btn">Start Game</button>
+    </div>
+  </div>
   <div id="modal" class="hidden">
     <div class="modal-content">
       <h2 id="modal-category"></h2>
