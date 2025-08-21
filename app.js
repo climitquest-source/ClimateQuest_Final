@@ -346,6 +346,7 @@ function setupModalHandlers() {
   const correctBtn = document.getElementById('correct-btn');
   const wrongBtn = document.getElementById('wrong-btn');
   const closeBtn = document.getElementById('close-btn');
+  const burnoutBtn = document.getElementById('burnout-btn');
   showAnsBtn.addEventListener('click', () => {
     // Toggle answer visibility
     answerVisible = !answerVisible;
@@ -369,6 +370,10 @@ function setupModalHandlers() {
   wrongBtn.addEventListener('click', () => {
     // On wrong answer, just close the modal without marking the cell used
     finishQuestion(false);
+  });
+  burnoutBtn.addEventListener('click', () => {
+    // Burnout: mark the tile as used without awarding any points
+    finishQuestion(true);
   });
   closeBtn.addEventListener('click', () => {
     // Closing behaves like wrong (no change to board)

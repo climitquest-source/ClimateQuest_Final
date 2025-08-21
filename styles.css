@@ -176,6 +176,12 @@ button {
   min-width: 90px;
 }
 
+/* Burnout button: used to discard a question when no one answers */
+#burnout-btn, .burnout {
+  background: #ffc107;
+  color: #214f3d;
+}
+
 #show-answer {
   background: #1b4332;
   color: #fff;
@@ -253,3 +259,52 @@ button {
   cursor: pointer;
   font-size: 1rem;
 }
+
+/* Buzzer info section in setup overlay */
+.buzzer-info {
+  margin-top: 1.5rem;
+  text-align: left;
+}
+.buzzer-info h3 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  color: #2d6a4f;
+}
+.buzzer-info p {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: #214f3d;
+}
+.buzzer-info a {
+  color: #386fa4;
+  text-decoration: underline;
+}
+
+/* Preview buzzers within the setup overlay. These small coloured cards give
+   hosts a quick visual of what each team’s manual buzzer looks like. */
+.buzzer-preview-container {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-start;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+.buzzer-preview {
+  width: 60px;
+  height: 90px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+/* Specific colours for each preview card */
+.buzzer-preview.green { background: #2d6a4f; }
+.buzzer-preview.blue  { background: #386fa4; }
+.buzzer-preview.yellow{ background: #e9c46a; color: #214f3d; }
+.buzzer-preview.red   { background: #e76f51; }
