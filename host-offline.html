@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cli‑Mit Quest Offline</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>Cli‑Mit Quest</h1>
+    <p>Offline Host Screen</p>
+  </header>
+  <main>
+    <section id="scoreboard"></section>
+    <section id="board"></section>
+  </main>
+  <div id="modal" class="hidden">
+    <div class="modal-content">
+      <h2 id="modal-category"></h2>
+      <p id="modal-question"></p>
+      <div id="answer-block" class="hidden">
+        <p id="modal-answer"></p>
+      </div>
+      <div class="modal-actions">
+        <div id="team-select"></div>
+        <button id="show-answer">Show Answer</button>
+        <button id="correct-btn" class="success">Correct</button>
+        <button id="wrong-btn" class="fail">Wrong</button>
+        <button id="close-btn">Close</button>
+      </div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
